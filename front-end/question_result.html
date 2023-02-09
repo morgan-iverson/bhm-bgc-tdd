@@ -1,0 +1,72 @@
+<html>
+
+    <head>
+        <link rel="stylesheet" href="/styles/question_screen.css" type="text/css">
+    </head>
+
+    <body>
+        <div id = "quiz-container">
+            <div id = "title-section">
+                <div id = "logo">
+                    <img src="TriviaLogo.jpg">
+                </div>
+                <div id = "title-text">
+                    <h1>Cool Math Game</h1>
+                    <h2>Addition Question</h2>
+                </div>
+            </div>
+
+            <div id = "question-body-section">
+                <h3 id = "correct-answer-message" hide>That's correct!</h3>
+                <h3 id = "wrong-answer-message">That's incorrect!</h3>
+                <div>
+                    What is the answer to the following question?
+                    <br>
+                    <span id = "question">1 + 1 = ?</span>
+                </div>
+                <div> 
+                    Your Answer: <span id = "given-answer">22</span>
+                    <br> 
+                    Correct Answer: <span id = "correct-answer">20</span>
+                </div>
+                <form>
+                    <div>
+                        <input type = "submit" value = "Next Question">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </body>
+    <script>
+
+        const correctAnswerMessage = document.getElementById("correct-answer-message");
+        const wrongAnswerMessage = document.getElementById("wrong-answer-message");
+        
+        addEventListener("submit", (e) => {
+            e.preventDefault();
+            const url = new URL("question_screen.html", window.location.origin);
+            window.open(url, "_self");
+        })
+        window.onload = () => {
+            const urlSearchParams = new URLSearchParams(window.location.search);
+            const isCorrect = urlSearchParams.get("is-correct");
+            const guess = urlSearchParams.get("guess");
+            const correctAnswer = urlSearchParams.get("correct-answer");
+            const questionString = urlSearchParams.get("question-string");
+            
+            if(isCorrect == "true") {
+                correctAnswerMessage.removeAttribute("hide");
+                wrongAnswerMessage.setAttribute("hide", "");
+            }
+            else if(isCorrect == "false") {
+                wrongAnswerMessage.removeAttribute("hide");
+                correctAnswerMessage.setAttribute("hide", "");
+            }
+
+            document.getElementById("given-answer").innerHTML = guess;
+            document.getElementById("correct-answer").innerHTML = correctAnswer;
+            document.getElementById("question").innerHTML = questionString;
+
+        }
+    </script>
+</html>

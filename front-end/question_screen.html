@@ -1,0 +1,131 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="/styles/question_screen.css" type="text/css">
+    </head>
+
+    <body>
+        <div id = "quiz-container">
+                <div id = "title-section">
+                    <div id = "logo">
+                        <img src="TriviaLogo.jpg">
+                    </div>
+                    <div id = "title-text">
+                        <h1>Cool Math Game</h1>
+                        <h2>Addition Question</h2>
+                    </div>
+                </div>
+
+            <div id = "question-body-section">
+                <h3> What is the solution to the following addition question?
+                    <br>
+                    <div id = "question-display"></div>
+                </h3>
+                <form method = "GET" path = "/math/addition/guess">
+                    <div id = "answer-entry">
+                        <input 
+                        id = "guess-input" 
+                        name = "guess" 
+                        type = "number" 
+                        max = 18
+                        min = 0
+                        placeholder = "Type your Guess Here!">
+                    
+                        <input id="number1" name="number1" hide>
+                        <input id="number2" name="number2" hide>
+                    </div>
+                    <div>
+                        <input type = "submit">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </body>
+
+    <script>
+        const hostname = "http://localhost:8080";
+        var question;
+
+        const questionDisplayDiv = document.getElementById("question-display");
+
+        addEventListener('submit', (e) => {
+            e.preventDefault();
+            let params = getParamMappingFromForm(e.target);
+            console.log(params);
+            const {method, path} = e.target.attributes;
+            executeRequest(method.value, hostname, path.value, params)
+            .then(json => {
+                console.log(json);
+                json["question-string"] = json["question"]["question-string"];
+                delete json["question"];
+                console.log(json)
+                let params = new URLSearchParams(json);
+                navigateToResultsScreen(params);
+                
+            })
+            .catch(error => {
+                alert(error);
+                console.error(error)
+            });
+        });
+
+        window.onload = () => {
+            executeRequest('GET', hostname, 'math/addition/question', null)
+            .then(json => {
+                question =  new Question(json["number1"], json["number2"], json["question-string"]);
+                loadQuestion(question);
+            })
+            .catch(error => console.log('error', error));
+        }
+
+        function loadQuestion(question) {
+            questionDisplayDiv.innerHTML = question.string;
+            document.getElementById("number1").value = question.n1;
+            document.getElementById("number2").value = question.n2;
+        }
+
+        class Question {
+            constructor(n1, n2, string) {
+                this.n1 = n1;
+                this.n2 = n2;
+                this.string = string;
+            }
+        }
+
+        function executeRequest(method, hostname, path, params) {
+            let url = new URL(path, hostname);
+
+            if(params != null && params.length > 0) {
+                params = Object.assign({}, ...params);            
+                let urlSearchParams = new URLSearchParams(params);
+                url.search = urlSearchParams;  
+            }
+
+            console.log("Sending Request: [" + method + "] [" + url.toString() + "]" );
+            
+            return fetch(url, { method: method })
+                .then(response => response.json())
+                .catch(error => console.log('error', error));
+        }
+
+        function getParamMappingFromForm(formHtmlElement) {
+            return Array.from(formHtmlElement.elements)
+            .filter(input => input.type != "submit")
+            .map(element => {
+                const json = {};
+                json[element.name] = element.value
+                return json
+            });
+        }
+    
+
+        function getURLSearchParamsFromJson() {
+
+        }
+        function navigateToResultsScreen(params) {
+            console.log(window.location.origin)
+            const url = new URL("/question_result.html", window.location.origin);
+            url.search = params;
+            window.open(url, "_self");
+        }
+    </script>
+</html>
